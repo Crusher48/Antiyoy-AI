@@ -8,25 +8,29 @@ public class WorldGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //for now, just generate a big blob of hexes
         foreach (Vector3 point in GridManager.Main.GetAllPointsInRangeOfTarget(Vector3.zero, 10))
         {
-            GameObject newHex = Instantiate(hexPrefab);
-            newHex.transform.position = point;
+            GameObject newHex = Instantiate(hexPrefab,point,Quaternion.identity);
             var gridLocation = GridManager.Main.GetGridPosition(point);
-            
-            if ((Mathf.Abs(gridLocation.x) == 10 || Mathf.Abs(gridLocation.x) == 5) &&
-                (Mathf.Abs(gridLocation.y) == 10 || Mathf.Abs(gridLocation.y) == 0))
-            {
-                newHex.GetComponent<TileScript>().ChangeTeam(1);
-                print(gridLocation);
-            }
-            List<Vector3Int> spawnPositions = new List<Vector3Int> { new Vector3Int(-10,0,0), new Vector3Int(10,0,0), 
+        }
+        //handle spawn positions
+        List<Vector3Int> spawnPositions = new List<Vector3Int> { new Vector3Int(-10,0,0), new Vector3Int(10,0,0),
                 new Vector3Int(-5,-10,0), new Vector3Int(-5,10,0), new Vector3Int(5,-10,0), new Vector3Int(5,10,0) };
-            foreach (Vector3Int position in spawnPositions)
+        int teamToSpawn = 1;
+        foreach (Vector3Int position in spawnPositions)
+        {
+            List<GameObject> hexes = GridManager.Main.GetObjectsAtGridPoint(position);
+            foreach (GameObject hex in hexes)
             {
-                List<GameObject> hexes = GridManager.Main.GetObjectsAtGridPoint(position);
-                foreach (GameObject hex in hexes)
-                    hex.GetComponent<TileScript>().ChangeTeam(2);
+                TileScript tileComponent = hex.GetComponent<TileScript>();
+                if (tileComponent != null)
+                {
+                    //change the team of the start tile
+                    tileComponent.ChangeTeam(teamToSpawn);
+                    teamToSpawn++;
+                    //TODO: Add capital building
+                }
             }
         }
     }

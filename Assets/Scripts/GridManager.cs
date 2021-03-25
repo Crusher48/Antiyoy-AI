@@ -94,11 +94,12 @@ public class GridManager : MonoBehaviour
         List<GameObject> returnVals = new List<GameObject>();
         print(point);
         print(GetWorldPosition(point));
-        RaycastHit2D[] hits = Physics2D.CircleCastAll(GetWorldPosition(point), 0.1f, Vector2.zero, 0);
-        foreach (RaycastHit2D hit in hits)
+        print((Vector2)(GetWorldPosition(point)));
+        Collider2D[] hits = Physics2D.OverlapPointAll((Vector2)(GetWorldPosition(point)),Physics2D.AllLayers);
+        foreach (Collider2D hit in hits)
         {
             print("Collider Hit!");
-            returnVals.Add(hit.collider.gameObject);
+            returnVals.Add(hit.gameObject);
         }
         return returnVals;
     }
