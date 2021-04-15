@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TileScript : MonoBehaviour
 {
-    int team = 0;
+    public int team = 0;
     public static Color[] TeamColors = {
         new Color(0.5f, 0.5f, 0.5f),
         new Color(0.25f, 0.25f, 1f),
@@ -16,7 +16,7 @@ public class TileScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        transform.parent = GameObject.Find("Grid").transform;
     }
 
     public void ChangeTeam(int team)

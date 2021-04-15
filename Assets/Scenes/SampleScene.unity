@@ -174,7 +174,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -191,7 +191,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -252,6 +252,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hexPrefab: {fileID: 3684851839469614466, guid: 8e80b6e3ae410924d972722add71f5c2,
     type: 3}
+  capitalPrefab: {fileID: 8633602850769572578, guid: 183c5bbdd5280cd4bace146fde443ca0,
+    type: 3}
 --- !u!4 &840841698
 Transform:
   m_ObjectHideFlags: 0
@@ -297,8 +299,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 0}
-  debugObject: {fileID: 6326641002294662093, guid: db7a5e525ce0ec14ca183f74098c32e9,
-    type: 3}
 --- !u!156049354 &1197505504
 Grid:
   m_ObjectHideFlags: 0
