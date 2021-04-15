@@ -102,23 +102,25 @@ public class GridManager : MonoBehaviour
         Collider2D[] hits = Physics2D.OverlapPointAll((Vector2)(GetWorldPosition(point)), Physics2D.AllLayers);
         foreach (Collider2D hit in hits)
         {
-            return hit.gameObject.GetComponent<TileScript>();
+            TileScript tileScript = hit.gameObject.GetComponent<TileScript>();
+            if (tileScript != null)
+                return tileScript;
         }
         return null;
     }
-    //gets all units on a point
-    public static List<UnitScript> GetObjectsAtGridPoint(Vector3Int point)
+    //gets the unit on a grid point
+    public static UnitScript GetUnitAtGridPoint(Vector3Int point)
     {
-        List<UnitScript> returnVals = new List<UnitScript>();
         //print(point);
         //print(GetWorldPosition(point));
         //print((Vector2)(GetWorldPosition(point)));
         Collider2D[] hits = Physics2D.OverlapPointAll((Vector2)(GetWorldPosition(point)),Physics2D.AllLayers);
         foreach (Collider2D hit in hits)
         {
-            print("Collider Hit!");
-            returnVals.Add(hit.gameObject.GetComponent<UnitScript>());
+            UnitScript unitScript = hit.gameObject.GetComponent<UnitScript>();
+            if (unitScript != null)
+                return unitScript;
         }
-        return returnVals;
+        return null;
     }
 }

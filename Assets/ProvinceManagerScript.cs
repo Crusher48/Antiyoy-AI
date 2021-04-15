@@ -5,10 +5,15 @@ using UnityEngine;
 public class ProvinceManagerScript : MonoBehaviour
 {
     public int team = 0;
-    public List<TileScript> controlledTiles;
-    public List<UnitScript> controlledUnits;
+    public HashSet<TileScript> controlledTiles;
+    public HashSet<UnitScript> controlledUnits;
     public int money = 0;
     //called to initialize the province
+    private void Awake()
+    {
+        controlledTiles = new HashSet<TileScript>();
+        controlledUnits = new HashSet<UnitScript>();
+    }
     public void InitializeProvince(int team, bool gameStart = false)
     {
         this.team = team;
@@ -28,17 +33,21 @@ public class ProvinceManagerScript : MonoBehaviour
         }
 
     }
-    public void DestroyProvince()
+    //province turn-start update
+    public void StartProvinceTurn()
     {
-
-    }
-    //handles the money for a turn
-    public void HandleMoney()
-    {
+        //handle money
         money += controlledTiles.Count; //+1 money per tile
         foreach (UnitScript unit in controlledUnits) //subtract upkeep for each unit
             money -= unit.upkeep;
         if (money <= 0)
             DestroyProvince();
+        //mobilize units
+        foreach (UnitScript unit in controlledUnits)
+            unit.canMove = true;
+    }
+    public void DestroyProvince()
+    {
+
     }
 }
