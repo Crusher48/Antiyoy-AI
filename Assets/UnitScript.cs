@@ -4,15 +4,40 @@ using UnityEngine;
 
 public class UnitScript : MonoBehaviour
 {
+    public ProvinceManagerScript owner;
+    public int buildCost = 0; //how much the unit costs to build
     public int upkeep = 0; //how much the unit costs (or gives) per turn
     public int powerLevel = 0; //the unit's power level, the attacker must have a higher power level to capture a unit or hex
     public bool mobile = true; //whether the unit can move or is a building
     public bool canMove = true; //whether the unit is ready to move
     public int MOVE_RANGE = 4; //the movement range of units
     //public int team = 0; //units always have the same team as the tile directly underneath them
+    private void Start()
+    {
+        SetOwner();
+    }
     public int GetTeam()
     {
-        return GridManager.GetHexAtGridPoint(GridManager.GetGridPosition(transform.position)).team;
+        TileScript currentTile = GridManager.GetHexAtGridPoint(GridManager.GetGridPosition(transform.position));
+        return currentTile.team;
+    }
+    public void SetOwner()
+    {
+        TileScript currentTile = GridManager.GetHexAtGridPoint(GridManager.GetGridPosition(transform.position));
+        owner = currentTile.owner;
+        owner.controlledUnits.Add(this);
+    }
+    public void MoveUnit(Vector3Int targetPosition)
+    {
+        if (!(mobile || canMove)) return; //we can't move if we can't move
+        int currentTeam = GetTeam();
+        TileScript targetTile = GridManager.GetHexAtGridPoint(targetPosition);
+        if (targetTile != null)
+        {
+            transform.position = GridManager.GetWorldPosition(targetPosition);
+            targetTile.ChangeTeam(currentTeam,owner);
+        }
+        canMove = false; //we've moved, now we can't move anymore
     }
     public HashSet<Vector3Int> GetAllValidMovePositions()
     {

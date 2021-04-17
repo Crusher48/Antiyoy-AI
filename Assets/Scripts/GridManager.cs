@@ -59,14 +59,14 @@ public class GridManager : MonoBehaviour
         return points;
     }
     //gets all world points within the given grid range of the target
-    public static List<Vector3> GetAllWorldPointsInRangeOfTarget(Vector3 position, int range)
+    public static List<Vector3> GetAllWorldPointsInRange(Vector3 position, int range)
     {
         List<Vector3> points = new List<Vector3>();
         Vector3Int centerPosition = grid.WorldToCell(position);
         //hexagon circle formula, does y first then x
-        for (int x = -10; x <= 10; x++)
+        for (int x = -range; x <= range; x++)
         {
-            for (int y = -10; y <= 10; y++)
+            for (int y = -range; y <= range; y++)
             {
                 Vector3Int potentialPoint = centerPosition + new Vector3Int(x, y, 0);
                 if (AreGridPointsInRange(centerPosition, potentialPoint, range))

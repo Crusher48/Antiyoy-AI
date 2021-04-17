@@ -75,27 +75,32 @@ PrefabInstance:
     - target: {fileID: 6960537346743837210, guid: 47649a6f2370b634298328b340d8a5f0,
         type: 3}
       propertyPath: m_Name
-      value: Peasant
-      objectReference: {fileID: 0}
-    - target: {fileID: 6960861358285467234, guid: 47649a6f2370b634298328b340d8a5f0,
-        type: 3}
-      propertyPath: upkeep
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6960861358285467234, guid: 47649a6f2370b634298328b340d8a5f0,
-        type: 3}
-      propertyPath: buildCost
-      value: 10
+      value: Baron
       objectReference: {fileID: 0}
     - target: {fileID: 6960861358285467234, guid: 47649a6f2370b634298328b340d8a5f0,
         type: 3}
       propertyPath: powerLevel
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6960861358285467234, guid: 47649a6f2370b634298328b340d8a5f0,
         type: 3}
       propertyPath: stationary
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8222242372399899438, guid: 47649a6f2370b634298328b340d8a5f0,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 0.3301887
+      objectReference: {fileID: 0}
+    - target: {fileID: 8222242372399899438, guid: 47649a6f2370b634298328b340d8a5f0,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.3301887
+      objectReference: {fileID: 0}
+    - target: {fileID: 8222242372399899438, guid: 47649a6f2370b634298328b340d8a5f0,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 0.3301887
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 47649a6f2370b634298328b340d8a5f0, type: 3}
