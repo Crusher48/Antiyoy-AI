@@ -7,7 +7,6 @@ public class ControlsScript : MonoBehaviour
 {
     public float moveSpeed = 5;
     public GameObject selectionHexPrefab;
-    public GameObject peasantPrefab;
     //selected objects
     public GameObject newUnit = null;
     public UnitScript selectedUnit = null;
@@ -59,7 +58,7 @@ public class ControlsScript : MonoBehaviour
             {
                 if (hoveredHex != null && hoveredHex.owner != null)
                 {
-                    hoveredHex.owner.CreateUnit(peasantPrefab, gridPos);
+                    hoveredHex.owner.CreateUnit(newUnit, gridPos);
                     newUnit = null;
                 }
                 //either way, destroy the selection hexagons afterwards
@@ -100,7 +99,7 @@ public class ControlsScript : MonoBehaviour
     //starts to spawn a unit
     void EnterSpawningMode()
     {
-        newUnit = peasantPrefab;
+        newUnit = GameManager.Main.tier1Unit;
         HashSet<Vector3Int> movePositions = new HashSet<Vector3Int>();
         foreach (ProvinceManagerScript activeProvince in GameManager.Main.activeProvinces)
         {

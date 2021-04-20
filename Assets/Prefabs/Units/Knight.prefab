@@ -79,6 +79,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6960861358285467234, guid: 47649a6f2370b634298328b340d8a5f0,
         type: 3}
+      propertyPath: upkeep
+      value: 54
+      objectReference: {fileID: 0}
+    - target: {fileID: 6960861358285467234, guid: 47649a6f2370b634298328b340d8a5f0,
+        type: 3}
+      propertyPath: buildCost
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 6960861358285467234, guid: 47649a6f2370b634298328b340d8a5f0,
+        type: 3}
       propertyPath: powerLevel
       value: 4
       objectReference: {fileID: 0}

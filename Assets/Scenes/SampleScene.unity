@@ -238,6 +238,7 @@ MonoBehaviour:
   capitalPrefab: {fileID: 8633602850769572578, guid: 183c5bbdd5280cd4bace146fde443ca0,
     type: 3}
   holeChance: 0.25
+  towerChance: 0.01
 --- !u!4 &840841698
 Transform:
   m_ObjectHideFlags: 0
@@ -267,6 +268,15 @@ MonoBehaviour:
   activeTeam: 0
   activeProvinces: []
   MAX_TEAMS: 6
+  tier1Unit: {fileID: 3715594107091024925, guid: 4945ce9b9460752458bd9919b9004724,
+    type: 3}
+  tier2Unit: {fileID: 3715594107091024925, guid: adeb2a9b1c9940f439773938c8570657,
+    type: 3}
+  tier3Unit: {fileID: 3715594107091024925, guid: c8693eb0136fb0d4f864f7f926cb4823,
+    type: 3}
+  tier4Unit: {fileID: 3715594107091024925, guid: 5a3a81ed0708c474d906820c88b8a06e,
+    type: 3}
+  tower: {fileID: 8226073792827079582, guid: 464a5ce75e374c44293820657e577bbb, type: 3}
 --- !u!1 &1197505502
 GameObject:
   m_ObjectHideFlags: 0

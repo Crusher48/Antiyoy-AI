@@ -58,9 +58,11 @@ public class ProvinceManagerScript : MonoBehaviour
     {
         foreach (UnitScript unit in controlledUnits)
         {
-            Destroy(unit.gameObject);
+            if (unit.GetComponent<ProvinceManagerScript>() == null)
+                Destroy(unit.gameObject);
         }
         controlledUnits.Clear();
+        money = 0;
     }
     //creates and deploys a new unit
     public void CreateUnit(GameObject unitPrefab,Vector3Int position)

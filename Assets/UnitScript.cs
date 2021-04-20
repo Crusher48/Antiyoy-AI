@@ -16,6 +16,11 @@ public class UnitScript : MonoBehaviour
     {
         SetOwner();
     }
+    private void OnDestroy()
+    {
+        if (owner != null)
+            owner.controlledUnits.Remove(this);
+    }
     public int GetTeam()
     {
         TileScript currentTile = GridManager.GetHexAtGridPoint(GridManager.GetGridPosition(transform.position));
@@ -25,17 +30,45 @@ public class UnitScript : MonoBehaviour
     {
         TileScript currentTile = GridManager.GetHexAtGridPoint(GridManager.GetGridPosition(transform.position));
         owner = currentTile.owner;
-        owner.controlledUnits.Add(this);
+        if (owner != null)
+            owner.controlledUnits.Add(this);
     }
     public void MoveUnit(Vector3Int targetPosition)
     {
         if (!(mobile || canMove)) return; //we can't move if we can't move
         int currentTeam = GetTeam();
         TileScript targetTile = GridManager.GetHexAtGridPoint(targetPosition);
+        UnitScript targetUnit = GridManager.GetUnitAtGridPoint(targetPosition);
+        //check conditions
         if (targetTile != null)
         {
-            transform.position = GridManager.GetWorldPosition(targetPosition);
-            targetTile.ChangeTeam(currentTeam,owner);
+            if (targetTile.owner == owner) //if moving to a friendly tile
+            {
+                if (targetUnit != null)
+                {
+                    if (!targetUnit.mobile) return; //can't move on top of a building, but can move through it
+                    //merge move handling
+                    GameObject mergedUnit = GameManager.Main.GetUnit(this.powerLevel + targetUnit.powerLevel);
+                    if (mergedUnit == null) return; //the resulting unit would be too powerful
+                    Instantiate(mergedUnit, targetUnit.transform.position, Quaternion.identity);
+                    mergedUnit.GetComponent<UnitScript>().mobile = targetUnit.mobile; //merged unit can move if the unit being merged into could move
+                    Destroy(gameObject);
+                    Destroy(targetUnit.gameObject);
+                }
+            }
+            else
+            {
+                //look for defenders
+                foreach (var adjacentPosition in GridManager.GetAllGridPointsInRange(targetPosition, 1))
+                {
+                    UnitScript possibleDefender = GridManager.GetUnitAtGridPoint(adjacentPosition);
+                    //move fails if a defender exists, is on the same team as the target tile, and it has power level equal to or greater than our own
+                    if (possibleDefender != null && possibleDefender.GetTeam() == targetTile.team && powerLevel <= possibleDefender.powerLevel) return;
+                }
+                if (targetUnit != null) Destroy(targetUnit.gameObject); //destroy the unit we attacked
+                transform.position = GridManager.GetWorldPosition(targetPosition);
+                targetTile.ChangeTeam(currentTeam, owner);
+            }
         }
         canMove = false; //we've moved, now we can't move anymore
     }
@@ -63,8 +96,8 @@ public class UnitScript : MonoBehaviour
                         {
                             if (hex.team == GetTeam()) //if friendly, add to the next frontier
                             {
-                                if (unit == null) //make sure we wouldn't move on top of a unit
-                                    newFrontierPositions.Add(point);
+                                //if (unit == null || unit.mobile) //make sure we wouldn't move on top of a unit
+                                newFrontierPositions.Add(point);
                             }
                             else //hostile hex, add to the explored nodes
                             {

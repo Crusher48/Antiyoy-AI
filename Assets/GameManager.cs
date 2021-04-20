@@ -8,6 +8,11 @@ public class GameManager : MonoBehaviour
     public int activeTeam = 0;
     public List<ProvinceManagerScript> activeProvinces;
     public int MAX_TEAMS = 12;
+    public GameObject tier1Unit;
+    public GameObject tier2Unit;
+    public GameObject tier3Unit;
+    public GameObject tier4Unit;
+    public GameObject tower;
     private void Awake()
     {
         Main = this;
@@ -39,5 +44,22 @@ public class GameManager : MonoBehaviour
             province.StartProvinceTurn();
         }
         //TODO: if province is ran by an AI, run the AI, else let the player play it
+    }
+    //utility function to get that tier of unit
+    public GameObject GetUnit(int powerLevel)
+    {
+        switch (powerLevel)
+        {
+            case 1:
+                return tier1Unit;
+            case 2:
+                return tier2Unit;
+            case 3:
+                return tier3Unit;
+            case 4:
+                return tier4Unit;
+            default:
+                return null;
+        }
     }
 }
