@@ -15,12 +15,13 @@ public class GameManager : MonoBehaviour
     public GameObject tier3Unit;
     public GameObject tier4Unit;
     public GameObject tower;
-    public List<int> playableTeams;
+    public HashSet<int> playableTeams;
     public float AITurnDelay = 0;
     public float AITurnDelayTimer;
     int currentRound = 1;
     private void Awake()
     {
+        playableTeams = new HashSet<int>();
         Main = this;
         //StartTurn(); (started by the world generator instead
     }
@@ -79,6 +80,7 @@ public class GameManager : MonoBehaviour
     //end the game
     public void EndGame()
     {
+        AITrainer.Main.EndAITrainingRound();
         SceneManager.LoadScene("MainScene");
     }
     //utility function to get that tier of unit

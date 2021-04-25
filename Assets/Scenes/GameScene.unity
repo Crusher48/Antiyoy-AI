@@ -299,7 +299,7 @@ MonoBehaviour:
   tier4Unit: {fileID: 3715594107091024925, guid: 5a3a81ed0708c474d906820c88b8a06e,
     type: 3}
   tower: {fileID: 8226073792827079582, guid: 464a5ce75e374c44293820657e577bbb, type: 3}
-  playableTeams: 
+  playableTeams: 01000000
   AITurnDelay: 0
   AITurnDelayTimer: 0
 --- !u!114 &840841700
