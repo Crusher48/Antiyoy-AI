@@ -18,6 +18,7 @@ public class ControlsScript : MonoBehaviour
     [SerializeField] Button placeTowerButton;
     [SerializeField] Button placeTownButton;
     [SerializeField] Button endTurnButton;
+    [SerializeField] Button endGameButton;
     [SerializeField] Text currentTeamText;
     [SerializeField] Text incomeText;
     // Start is called before the first frame update
@@ -26,6 +27,7 @@ public class ControlsScript : MonoBehaviour
         selectionHexagons = new HashSet<GameObject>();
         placeUnitButton.onClick.AddListener(EnterSpawningMode);
         endTurnButton.onClick.AddListener(EndTurn);
+        endGameButton.onClick.AddListener(EndGame);
     }
 
     // Update is called once per frame
@@ -116,5 +118,10 @@ public class ControlsScript : MonoBehaviour
     void EndTurn()
     {
         GameManager.Main.EndTurn();
+    }
+    //ends the game, returning to the menu
+    void EndGame()
+    {
+        GameManager.Main.EndGame();
     }
 }

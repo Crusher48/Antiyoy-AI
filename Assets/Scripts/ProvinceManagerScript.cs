@@ -28,7 +28,6 @@ public class ProvinceManagerScript : MonoBehaviour
         if (gameStart)
         {
             money = 10; //add starting money to the province
-            print(GridManager.GetGridPosition(transform.position));
             List<Vector3Int> nearbyPositions = GridManager.GetAllGridPointsInRange(GridManager.GetGridPosition(transform.position), 1);
             foreach (Vector3Int position in nearbyPositions)
             {

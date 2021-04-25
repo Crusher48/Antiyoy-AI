@@ -136,6 +136,21 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -290
       objectReference: {fileID: 0}
+    - target: {fileID: 4474709921689577723, guid: 7933449346655264285c8e356d092549,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 520.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4474709921689577723, guid: 7933449346655264285c8e356d092549,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -288
+      objectReference: {fileID: 0}
+    - target: {fileID: 5446947673392330012, guid: 7933449346655264285c8e356d092549,
+        type: 3}
+      propertyPath: m_Name
+      value: End Game
+      objectReference: {fileID: 0}
     - target: {fileID: 5900462510167258739, guid: 7933449346655264285c8e356d092549,
         type: 3}
       propertyPath: m_RootOrder
@@ -201,6 +216,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7038628116009944047, guid: 7933449346655264285c8e356d092549,
+        type: 3}
+      propertyPath: m_Text
+      value: End Game
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7933449346655264285c8e356d092549, type: 3}
 --- !u!1 &840841696
@@ -214,8 +234,9 @@ GameObject:
   - component: {fileID: 840841698}
   - component: {fileID: 840841697}
   - component: {fileID: 840841699}
+  - component: {fileID: 840841700}
   m_Layer: 0
-  m_Name: WorldMap
+  m_Name: Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -268,6 +289,7 @@ MonoBehaviour:
   activeTeam: 0
   activeProvinces: []
   MAX_TEAMS: 6
+  MAX_ROUNDS: 50
   tier1Unit: {fileID: 3715594107091024925, guid: 4945ce9b9460752458bd9919b9004724,
     type: 3}
   tier2Unit: {fileID: 3715594107091024925, guid: adeb2a9b1c9940f439773938c8570657,
@@ -277,6 +299,22 @@ MonoBehaviour:
   tier4Unit: {fileID: 3715594107091024925, guid: 5a3a81ed0708c474d906820c88b8a06e,
     type: 3}
   tower: {fileID: 8226073792827079582, guid: 464a5ce75e374c44293820657e577bbb, type: 3}
+  playableTeams: 
+  AITurnDelay: 0
+  AITurnDelayTimer: 0
+--- !u!114 &840841700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 840841696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa39f9bc59309e45bbf54df2552f599, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentAI: []
 --- !u!1 &1197505502
 GameObject:
   m_ObjectHideFlags: 0
