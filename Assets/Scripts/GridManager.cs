@@ -123,4 +123,51 @@ public class GridManager : MonoBehaviour
         }
         return null;
     }
+    //gets all hexes of the same team connected to the hex
+    public static HashSet<Vector3Int> GetAllConnectedTiles(Vector3Int gridPosition, int maxRange, bool extendIntoOpposition = true)
+    {
+        TileScript startTile = GetHexAtGridPoint(gridPosition);
+        if (startTile == null) return null;
+        //A*-like, we have explored positions and frontier positions
+        HashSet<Vector3Int> exploredPositions = new HashSet<Vector3Int>(); //fully exploerd positions
+        HashSet<Vector3Int> frontierPositions = new HashSet<Vector3Int>(); //positions on the frontier that we can still move from
+        frontierPositions.Add(gridPosition);
+        HashSet<Vector3Int> newFrontierPositions = new HashSet<Vector3Int>(); //positions that will be added to the frontier at the end of the cycle
+        for (int stage = 1; stage <= maxRange; stage++)
+        {
+            if (frontierPositions.Count == 0) break;
+            //iterate through each node in frontier positions, getting the adjacent points to it and adding it to the list
+            foreach (Vector3Int frontierPoint in frontierPositions)
+            {
+                foreach (Vector3Int point in GetAllGridPointsInRange(frontierPoint, 1))
+                {
+                    //if the point isn't in explored positions or frontier positions
+                    if (!(exploredPositions.Contains(point) || frontierPositions.Contains(point)))
+                    {
+                        TileScript hex = GetHexAtGridPoint(point);
+                        UnitScript unit = GetUnitAtGridPoint(point);
+                        if (hex != null)
+                        {
+                            if (hex.team == startTile.team) //if friendly, add to the next frontier
+                            {
+                                //if (unit == null || unit.mobile) //make sure we wouldn't move on top of a unit
+                                newFrontierPositions.Add(point);
+                            }
+                            else if (extendIntoOpposition)//hostile hex, add to the explored nodes
+                            {
+                                exploredPositions.Add(point);
+                            }
+                        }
+                    }
+                }
+            }
+            //move the frontier into explored and the new frontier into the frontier
+            exploredPositions.UnionWith(frontierPositions);
+            frontierPositions = new HashSet<Vector3Int>(newFrontierPositions);
+            newFrontierPositions.Clear();
+        }
+        //move remaining frontier nodes into explored
+        exploredPositions.UnionWith(frontierPositions);
+        return exploredPositions;
+    }
 }

@@ -72,4 +72,53 @@ public class ProvinceManagerScript : MonoBehaviour
         GameObject newUnit = Instantiate(unitPrefab, GridManager.GetWorldPosition(position), Quaternion.identity);
         money -= buildCost;
     }
+    //merges with another friendly province
+    public void MergeProvince(ProvinceManagerScript otherProvince)
+    {
+        ProvinceManagerScript winningProvince, losingProvince;
+        if (otherProvince.controlledTiles.Count > this.controlledTiles.Count) //the larger province wins the merger
+        {
+            winningProvince = otherProvince;
+            losingProvince = this;
+        }
+        else
+        {
+            
+            winningProvince = this;
+            losingProvince = otherProvince;
+        }
+        foreach (var tile in losingProvince.controlledTiles)
+            tile.owner = winningProvince;
+        foreach (var unit in losingProvince.controlledUnits)
+            unit.owner = winningProvince;
+        winningProvince.money += losingProvince.money;
+        Destroy(losingProvince.gameObject);
+    }
+    //the province has been split, create a new province
+    public void SplitProvince(IEnumerable<Vector3Int> newTerritory)
+    {
+        List<Vector3Int> newTerritoryList = new List<Vector3Int>(newTerritory);
+        //pick a random location to place the capital
+        Vector3Int chosenPosition; int counter = 50;
+        do
+        {
+            chosenPosition = newTerritoryList[Random.Range(0, newTerritoryList.Count)];
+            if (GridManager.GetUnitAtGridPoint(chosenPosition) == null) 
+                counter = 0;
+            else 
+                counter--;
+        }
+        while (counter < 0);
+        if (GridManager.GetUnitAtGridPoint(chosenPosition) != null) Destroy(GridManager.GetUnitAtGridPoint(chosenPosition));
+        ProvinceManagerScript newCapital = Instantiate(GameManager.Main.capital, GridManager.GetWorldPosition(chosenPosition), Quaternion.identity).GetComponent<ProvinceManagerScript>();
+        newCapital.team = team;
+        foreach (Vector3Int position in newTerritoryList)
+        {
+            TileScript tile = GridManager.GetHexAtGridPoint(position);
+            if (tile == null || tile.owner != this) print("Invalid tile in split!");
+            tile.ChangeTeam(newCapital.team, newCapital);
+            UnitScript unit = GridManager.GetUnitAtGridPoint(position);
+            if (unit != null) unit.SetOwner();
+        }
+    }
 }

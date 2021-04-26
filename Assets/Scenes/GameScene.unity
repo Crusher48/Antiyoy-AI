@@ -211,6 +211,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerControls
       objectReference: {fileID: 0}
+    - target: {fileID: 5900462510167258767, guid: 7933449346655264285c8e356d092549,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7006862695269359115, guid: 7933449346655264285c8e356d092549,
         type: 3}
       propertyPath: m_IsActive
@@ -288,8 +293,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   activeTeam: 0
   activeProvinces: []
-  MAX_TEAMS: 6
+  MAX_TEAMS: 2
   MAX_ROUNDS: 50
+  capital: {fileID: 8633602850769572578, guid: 183c5bbdd5280cd4bace146fde443ca0, type: 3}
   tier1Unit: {fileID: 3715594107091024925, guid: 4945ce9b9460752458bd9919b9004724,
     type: 3}
   tier2Unit: {fileID: 3715594107091024925, guid: adeb2a9b1c9940f439773938c8570657,
@@ -299,7 +305,10 @@ MonoBehaviour:
   tier4Unit: {fileID: 3715594107091024925, guid: 5a3a81ed0708c474d906820c88b8a06e,
     type: 3}
   tower: {fileID: 8226073792827079582, guid: 464a5ce75e374c44293820657e577bbb, type: 3}
-  playableTeams: 01000000
+  strongTower: {fileID: 3480482170024818438, guid: 985c8741ed6da69419c262a81335dc22,
+    type: 3}
+  town: {fileID: 5992192988005660492, guid: 9cffba25a9018694589f74d967d23569, type: 3}
+  manualOverride: 1
   AITurnDelay: 0
   AITurnDelayTimer: 0
 --- !u!114 &840841700

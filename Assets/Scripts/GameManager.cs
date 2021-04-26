@@ -8,14 +8,18 @@ public class GameManager : MonoBehaviour
     public static GameManager Main;
     public int activeTeam = 0;
     public List<ProvinceManagerScript> activeProvinces;
-    public int MAX_TEAMS = 12;
+    public int MAX_TEAMS = 2;
     public int MAX_ROUNDS = 50;
+    public GameObject capital;
     public GameObject tier1Unit;
     public GameObject tier2Unit;
     public GameObject tier3Unit;
     public GameObject tier4Unit;
     public GameObject tower;
+    public GameObject strongTower;
+    public GameObject town;
     public HashSet<int> playableTeams;
+    public bool manualOverride = false;
     public float AITurnDelay = 0;
     public float AITurnDelayTimer;
     int currentRound = 1;
@@ -27,7 +31,7 @@ public class GameManager : MonoBehaviour
     }
     private void Update()
     {
-        if (!playableTeams.Contains(activeTeam))
+        if (!playableTeams.Contains(activeTeam) && !manualOverride)
         {
             AITurnDelayTimer -= Time.deltaTime;
             if (AITurnDelayTimer < 0)
@@ -36,7 +40,7 @@ public class GameManager : MonoBehaviour
                 {
                     GetComponent<AIManager>().RunAITurn(province);
                     EndTurn();
-                }    
+                }
             }
         }
     }

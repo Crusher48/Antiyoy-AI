@@ -28,6 +28,8 @@ public class UnitScript : MonoBehaviour
     }
     public void SetOwner()
     {
+        if (owner != null)
+            owner.controlledUnits.Remove(this);
         TileScript currentTile = GridManager.GetHexAtGridPoint(GridManager.GetGridPosition(transform.position));
         owner = currentTile.owner;
         if (owner != null)
@@ -35,7 +37,8 @@ public class UnitScript : MonoBehaviour
     }
     public void MoveUnit(Vector3Int targetPosition)
     {
-        if (!(mobile || canMove)) return; //we can't move if we can't move
+        if (!(mobile && canMove)) return; //we can't move if we can't move
+        if (targetPosition == GridManager.GetGridPosition(transform.position)) return; //no, you cannot move into yourself to upgrade
         int currentTeam = GetTeam();
         TileScript targetTile = GridManager.GetHexAtGridPoint(targetPosition);
         UnitScript targetUnit = GridManager.GetUnitAtGridPoint(targetPosition);
@@ -51,23 +54,51 @@ public class UnitScript : MonoBehaviour
                     GameObject mergedUnit = GameManager.Main.GetUnit(this.powerLevel + targetUnit.powerLevel);
                     if (mergedUnit == null) return; //the resulting unit would be too powerful
                     Instantiate(mergedUnit, targetUnit.transform.position, Quaternion.identity);
-                    mergedUnit.GetComponent<UnitScript>().mobile = targetUnit.mobile; //merged unit can move if the unit being merged into could move
+                    mergedUnit.GetComponent<UnitScript>().canMove = targetUnit.canMove; //merged unit can move if the unit being merged into could move
                     Destroy(gameObject);
                     Destroy(targetUnit.gameObject);
+                }
+                else
+                {
+                    transform.position = GridManager.GetWorldPosition(targetPosition);
                 }
             }
             else
             {
+                List<Vector3Int> adjacentPositions = GridManager.GetAllGridPointsInRange(targetPosition, 1);
                 //look for defenders
-                foreach (var adjacentPosition in GridManager.GetAllGridPointsInRange(targetPosition, 1))
+                foreach (var adjacentPosition in adjacentPositions)
                 {
                     UnitScript possibleDefender = GridManager.GetUnitAtGridPoint(adjacentPosition);
                     //move fails if a defender exists, is on the same team as the target tile, and it has power level equal to or greater than our own
                     if (possibleDefender != null && possibleDefender.GetTeam() == targetTile.team && powerLevel <= possibleDefender.powerLevel) return;
                 }
-                if (targetUnit != null) Destroy(targetUnit.gameObject); //destroy the unit we attacked
                 transform.position = GridManager.GetWorldPosition(targetPosition);
                 targetTile.ChangeTeam(currentTeam, owner);
+                //split and merge functionality
+                foreach (var adjacentPosition in adjacentPositions)
+                {
+                    TileScript adjacentTile = GridManager.GetHexAtGridPoint(adjacentPosition);
+                    if (adjacentTile == null) continue;
+                    if (adjacentTile.team == currentTeam)
+                    {
+                        if (adjacentTile.owner != targetTile.owner)
+                        {
+                            print("Merging Province!");
+                            owner.MergeProvince(adjacentTile.owner);
+                        }
+                    }
+                    else
+                    {
+                        var connectedPositions = GridManager.GetAllConnectedTiles(GridManager.GetGridPosition(adjacentTile.transform.position), 99, false);
+                        if (adjacentTile.owner != null && !connectedPositions.Contains(GridManager.GetGridPosition(adjacentTile.owner.transform.position)))
+                        {
+                            print("Splitting Province!");
+                            adjacentTile.owner.SplitProvince(connectedPositions);
+                        }
+                    }
+                }
+                if (targetUnit != null) Destroy(targetUnit.gameObject); //destroy the unit we attacked
             }
         }
         canMove = false; //we've moved, now we can't move anymore
@@ -75,6 +106,8 @@ public class UnitScript : MonoBehaviour
     public HashSet<Vector3Int> GetAllValidMovePositions()
     {
         if (!mobile) return new HashSet<Vector3Int>();
+        return GridManager.GetAllConnectedTiles(GridManager.GetGridPosition(transform.position), 4);
+        /*
         //A*-like, we have explored positions and frontier positions
         HashSet<Vector3Int> exploredPositions = new HashSet<Vector3Int>(); //fully exploerd positions
         HashSet<Vector3Int> frontierPositions = new HashSet<Vector3Int>(); //positions on the frontier that we can still move from
@@ -115,5 +148,6 @@ public class UnitScript : MonoBehaviour
         //move remaining frontier nodes into explored
         exploredPositions.UnionWith(frontierPositions);
         return exploredPositions;
+        */
     }
 }

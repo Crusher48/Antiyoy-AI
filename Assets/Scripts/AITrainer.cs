@@ -68,15 +68,13 @@ public class AITrainer : MonoBehaviour
         //after the scene is loaded, do things
         transform.position = new Vector3(0, 0, -10);
         GameObject playerControlsObject = GameObject.Find("PlayerControls");
+        if (viewable)
+            GameManager.Main.AITurnDelayTimer = 0.1f;
         if (playable)
         {
             GameManager.Main.playableTeams.Add(1);
             gameObject.SetActive(false);
             playerControlsObject.SetActive(true);
-        }
-        else
-        {
-            playerControlsObject.SetActive(false);
         }
     }
     //trains all AIs based on the data, and sets up for the next round
