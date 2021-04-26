@@ -64,13 +64,41 @@ public class ProvinceManagerScript : MonoBehaviour
         money = 0;
     }
     //creates and deploys a new unit
-    public void CreateUnit(GameObject unitPrefab,Vector3Int position)
+    public void SpawnUnit(GameObject unitPrefab,Vector3Int position)
     {
-        int buildCost = unitPrefab.GetComponent<UnitScript>().buildCost;
+        UnitScript unitBlueprint = unitPrefab.GetComponent<UnitScript>();
+        int buildCost = unitBlueprint.buildCost;
+        if (unitBlueprint.upkeep < 0) //towns are more expensive the more of them you have
+            buildCost += 2 * GetTownCount();
         if (money < buildCost) return; //we need enough money to actually build the unit
         //create the unit
-        GameObject newUnit = Instantiate(unitPrefab, GridManager.GetWorldPosition(position), Quaternion.identity);
-        money -= buildCost;
+        TileScript targetTIle = GridManager.GetHexAtGridPoint(position);
+        UnitScript targetUnit = GridManager.GetUnitAtGridPoint(position);
+        //if tile is clear, just move there
+        if (targetTIle.owner == this && targetUnit == null)
+        {
+            GameObject newUnit = Instantiate(unitPrefab, GridManager.GetWorldPosition(position), Quaternion.identity);
+            money -= buildCost;
+        }
+        else //initialize the unit on this province tile and then attempt to move it
+        {
+            GameObject newUnit = Instantiate(unitPrefab, this.transform.position, Quaternion.identity);
+            if (newUnit.GetComponent<UnitScript>().MoveUnit(position))
+                money -= buildCost;
+            else
+                Destroy(newUnit);
+        }
+    }
+    //gets the amount of towns already in this province
+    public int GetTownCount()
+    {
+        int towns = 0;
+        foreach (UnitScript unit in controlledUnits)
+        {
+            if (unit.upkeep < 0)
+                towns++;
+        }
+        return towns;
     }
     //merges with another friendly province
     public void MergeProvince(ProvinceManagerScript otherProvince)
@@ -92,6 +120,7 @@ public class ProvinceManagerScript : MonoBehaviour
         foreach (var unit in losingProvince.controlledUnits)
             unit.owner = winningProvince;
         winningProvince.money += losingProvince.money;
+        GameManager.Main.activeProvinces.Remove(losingProvince);
         Destroy(losingProvince.gameObject);
     }
     //the province has been split, create a new province
@@ -109,7 +138,7 @@ public class ProvinceManagerScript : MonoBehaviour
                 counter--;
         }
         while (counter < 0);
-        if (GridManager.GetUnitAtGridPoint(chosenPosition) != null) Destroy(GridManager.GetUnitAtGridPoint(chosenPosition));
+        if (GridManager.GetUnitAtGridPoint(chosenPosition) != null) Destroy(GridManager.GetUnitAtGridPoint(chosenPosition).gameObject); //if forced to override a unit, destroy it
         ProvinceManagerScript newCapital = Instantiate(GameManager.Main.capital, GridManager.GetWorldPosition(chosenPosition), Quaternion.identity).GetComponent<ProvinceManagerScript>();
         newCapital.team = team;
         foreach (Vector3Int position in newTerritoryList)

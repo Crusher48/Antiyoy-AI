@@ -12,7 +12,7 @@ public class UnitScript : MonoBehaviour
     public bool canMove = true; //whether the unit is ready to move
     public int MOVE_RANGE = 4; //the movement range of units
     //public int team = 0; //units always have the same team as the tile directly underneath them
-    private void Start()
+    private void Awake()
     {
         SetOwner();
     }
@@ -35,10 +35,11 @@ public class UnitScript : MonoBehaviour
         if (owner != null)
             owner.controlledUnits.Add(this);
     }
-    public void MoveUnit(Vector3Int targetPosition)
+    //attempts to move the unit, returns false if the unit failed to move
+    public bool MoveUnit(Vector3Int targetPosition)
     {
-        if (!(mobile && canMove)) return; //we can't move if we can't move
-        if (targetPosition == GridManager.GetGridPosition(transform.position)) return; //no, you cannot move into yourself to upgrade
+        if (!(mobile && canMove)) return false; //we can't move if we can't move
+        if (targetPosition == GridManager.GetGridPosition(transform.position)) return false; //no, you cannot move into yourself to upgrade
         int currentTeam = GetTeam();
         TileScript targetTile = GridManager.GetHexAtGridPoint(targetPosition);
         UnitScript targetUnit = GridManager.GetUnitAtGridPoint(targetPosition);
@@ -49,10 +50,10 @@ public class UnitScript : MonoBehaviour
             {
                 if (targetUnit != null)
                 {
-                    if (!targetUnit.mobile) return; //can't move on top of a building, but can move through it
+                    if (!targetUnit.mobile) return false; //can't move on top of a building, but can move through it
                     //merge move handling
                     GameObject mergedUnit = GameManager.Main.GetUnit(this.powerLevel + targetUnit.powerLevel);
-                    if (mergedUnit == null) return; //the resulting unit would be too powerful
+                    if (mergedUnit == null) return false; //the resulting unit would be too powerful
                     Instantiate(mergedUnit, targetUnit.transform.position, Quaternion.identity);
                     mergedUnit.GetComponent<UnitScript>().canMove = targetUnit.canMove; //merged unit can move if the unit being merged into could move
                     Destroy(gameObject);
@@ -71,7 +72,7 @@ public class UnitScript : MonoBehaviour
                 {
                     UnitScript possibleDefender = GridManager.GetUnitAtGridPoint(adjacentPosition);
                     //move fails if a defender exists, is on the same team as the target tile, and it has power level equal to or greater than our own
-                    if (possibleDefender != null && possibleDefender.GetTeam() == targetTile.team && powerLevel <= possibleDefender.powerLevel) return;
+                    if (possibleDefender != null && possibleDefender.GetTeam() == targetTile.team && powerLevel <= possibleDefender.powerLevel) return false;
                 }
                 transform.position = GridManager.GetWorldPosition(targetPosition);
                 targetTile.ChangeTeam(currentTeam, owner);
@@ -86,6 +87,7 @@ public class UnitScript : MonoBehaviour
                         {
                             print("Merging Province!");
                             owner.MergeProvince(adjacentTile.owner);
+                            SetOwner(); //just in case
                         }
                     }
                     else
@@ -102,6 +104,7 @@ public class UnitScript : MonoBehaviour
             }
         }
         canMove = false; //we've moved, now we can't move anymore
+        return true;
     }
     public HashSet<Vector3Int> GetAllValidMovePositions()
     {

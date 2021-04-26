@@ -25,7 +25,9 @@ public class ControlsScript : MonoBehaviour
     void Start()
     {
         selectionHexagons = new HashSet<GameObject>();
-        placeUnitButton.onClick.AddListener(EnterSpawningMode);
+        placeUnitButton.onClick.AddListener(SpawnGuy);
+        placeTowerButton.onClick.AddListener(SpawnTower);
+        placeTownButton.onClick.AddListener(SpawnTown);
         endTurnButton.onClick.AddListener(EndTurn);
         endGameButton.onClick.AddListener(EndGame);
     }
@@ -58,12 +60,25 @@ public class ControlsScript : MonoBehaviour
             //if new unit is not null, we're placing a unit
             if (newUnit != null)
             {
-                if (hoveredHex != null && hoveredHex.owner != null)
+                if (hoveredHex != null && hoveredHex.team == GameManager.Main.activeTeam) //basic spawning
                 {
-                    hoveredHex.owner.CreateUnit(newUnit, gridPos);
-                    newUnit = null;
+                    hoveredHex.owner.SpawnUnit(newUnit, gridPos);
+                }
+                else //advanced spawning, look for an adjacent province to spawn from
+                {
+                    List<Vector3Int> adjacentPositions = GridManager.GetAllGridPointsInRange(gridPos, 1);
+                    foreach (var adjacentPosition in adjacentPositions)
+                    {
+                        TileScript adjacentHex = GridManager.GetHexAtGridPoint(adjacentPosition);
+                        if (adjacentHex != null && adjacentHex.team == GameManager.Main.activeTeam) //will arbitrarilly pick one province to do it, but if the move is valid this will merge provinces
+                        {
+                            adjacentHex.owner.SpawnUnit(newUnit, gridPos);
+                            break;
+                        }
+                    }
                 }
                 //either way, destroy the selection hexagons afterwards
+                newUnit = null;
                 foreach (var obj in selectionHexagons)
                     Destroy(obj);
                 selectionHexagons.Clear();
@@ -73,7 +88,7 @@ public class ControlsScript : MonoBehaviour
             {
                 selectedUnit = GridManager.GetUnitAtGridPoint(gridPos);
                 //if the unit was successfully selected, fill in the movement range
-                if (selectedUnit != null && selectedUnit.mobile && selectedUnit.canMove)
+                if (selectedUnit != null && selectedUnit.mobile && selectedUnit.canMove && selectedUnit.GetTeam() == GameManager.Main.activeTeam)
                 {
                     HashSet<Vector3Int> movePositions = selectedUnit.GetAllValidMovePositions();
                     foreach (Vector3Int position in movePositions)
@@ -83,6 +98,8 @@ public class ControlsScript : MonoBehaviour
                     }
                     validMovePositions = movePositions;
                 }
+                else
+                    selectedUnit = null;
             }
             //if selected unit is not null, attempt to move the unit
             else
@@ -99,20 +116,35 @@ public class ControlsScript : MonoBehaviour
         }
     }
     //starts to spawn a unit
-    void EnterSpawningMode()
+    void EnterSpawningMode(GameObject unitToSpawn)
     {
-        newUnit = GameManager.Main.tier1Unit;
+        newUnit = unitToSpawn;
         HashSet<Vector3Int> movePositions = new HashSet<Vector3Int>();
         foreach (ProvinceManagerScript activeProvince in GameManager.Main.activeProvinces)
         {
-            foreach (TileScript tile in activeProvince.controlledTiles)
+            foreach (Vector3Int position in GridManager.GetAllConnectedTiles(GridManager.GetGridPosition(activeProvince.transform.position),99) )
+            {
+                TileScript tile = GridManager.GetHexAtGridPoint(position);
                 movePositions.Add(GridManager.GetGridPosition(tile.transform.position));
+            }
         }
         foreach (Vector3Int position in movePositions)
         {
             GameObject newObject = Instantiate(selectionHexPrefab, GridManager.GetWorldPosition(position), Quaternion.identity);
             selectionHexagons.Add(newObject);
         }
+    }
+    void SpawnGuy()
+    {
+        EnterSpawningMode(GameManager.Main.tier1Unit);
+    }
+    void SpawnTower()
+    {
+        EnterSpawningMode(GameManager.Main.tower);
+    }
+    void SpawnTown()
+    {
+        EnterSpawningMode(GameManager.Main.town);
     }
     //ends the turn
     void EndTurn()
