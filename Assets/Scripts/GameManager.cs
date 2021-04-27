@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
     public GameObject town;
     public HashSet<int> playableTeams;
     public bool manualOverride = false;
-    public float AITurnDelay = 0;
+    public float AITurnDelay = 1;
     public float AITurnDelayTimer;
     int currentRound = 1;
     private void Awake()
@@ -36,11 +36,12 @@ public class GameManager : MonoBehaviour
             AITurnDelayTimer -= Time.deltaTime;
             if (AITurnDelayTimer < 0)
             {
+                print(activeTeam);
                 foreach (ProvinceManagerScript province in activeProvinces) //run the AI for each province, then end the turn
                 {
                     GetComponent<AIManager>().RunAITurn(province);
-                    EndTurn();
                 }
+                EndTurn();
             }
         }
     }

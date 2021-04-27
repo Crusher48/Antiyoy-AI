@@ -89,6 +89,17 @@ public class ProvinceManagerScript : MonoBehaviour
                 Destroy(newUnit);
         }
     }
+    //gets the amount of mobile units of the given tier (or all if tier is left at 0
+    public int GetUnitCount(int tier = 0)
+    {
+        int unitAmount = 0;
+        foreach (UnitScript unit in controlledUnits)
+        {
+            if (unit.mobile && (tier == 0 || unit.powerLevel == tier))
+                unitAmount++;
+        }
+        return unitAmount;
+    }
     //gets the amount of towns already in this province
     public int GetTownCount()
     {

@@ -4,19 +4,19 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-//placeholder neural network class
+//placeholder AI interface class
 [System.Serializable]
-public class NeuralNetworkPlaceholder
+public class AIInterface
 {
     //processes the strategic neural network
-    public List<float> ProcessStrategicNetwork(List<float> inputs)
+    virtual public List<float> ProcessStrategicNetwork(List<float> inputs, int expectedOutputs)
     {
-        return new List<float>();
+        return new List<float>(expectedOutputs);
     }
     //processes the weights neural network (for each tile)
-    public List<float> ProcessWeightsNetwork(List<float> inputs)
+    virtual public List<float> ProcessWeightsNetwork(List<float> inputs, int expectedOutputs)
     {
-        return new List<float>();
+        return new List<float>(expectedOutputs);
     }
 }
 
@@ -32,7 +32,7 @@ public class AITrainer : MonoBehaviour
     //singleton reference
     public static AITrainer Main;
     //the list of all AI data currently in the pool
-    List<NeuralNetworkPlaceholder> AIData;
+    List<AIInterface> AIData;
     int generation = 0;
     //for training loop
     int trainingRoundsRemaining = 0;
@@ -69,13 +69,22 @@ public class AITrainer : MonoBehaviour
         transform.position = new Vector3(0, 0, -10);
         GameObject playerControlsObject = GameObject.Find("PlayerControls");
         if (viewable)
-            GameManager.Main.AITurnDelayTimer = 0.1f;
+        {
+            GameManager.Main.AITurnDelay = 1f;
+        }
+        else
+        {
+            GameManager.Main.AITurnDelay = 0f;
+        }
         if (playable)
         {
             GameManager.Main.playableTeams.Add(1);
             gameObject.SetActive(false);
             playerControlsObject.SetActive(true);
         }
+        for (int x = 0; x < GameManager.Main.MAX_TEAMS; x++)
+            AIManager.Main.currentAIs.Add(new HardcodedAI());
+        print("Loaded AIs!");
     }
     //trains all AIs based on the data, and sets up for the next round
     public void EndAITrainingRound()

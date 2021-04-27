@@ -170,4 +170,61 @@ public class GridManager : MonoBehaviour
         exploredPositions.UnionWith(frontierPositions);
         return exploredPositions;
     }
+    //gets the defense level at the grid position
+    public static int GetDefenseLevel(Vector3Int targetPosition)
+    {
+        TileScript targetTile = GetHexAtGridPoint(targetPosition);
+        int defenseLevel = 0;
+        List<Vector3Int> adjacentPositions = GetAllGridPointsInRange(targetPosition, 1);
+        //look for defenders
+        foreach (var adjacentPosition in adjacentPositions)
+        {
+            UnitScript possibleDefender = GetUnitAtGridPoint(adjacentPosition);
+            //move fails if a defender exists, is on the same team as the target tile, and it has power level equal to or greater than our own
+            if (possibleDefender != null && possibleDefender.GetTeam() == targetTile.team && defenseLevel <= possibleDefender.powerLevel) defenseLevel = possibleDefender.powerLevel;
+        }
+        return defenseLevel;
+    }
+    //gets the range from this hex to another team's hex
+    public static int GetRangeToOtherTeam(Vector3Int gridPosition, int maxRange, bool countNeutrals = false)
+    {
+        TileScript startTile = GetHexAtGridPoint(gridPosition);
+        if (startTile == null) return maxRange;
+        //A*-like, we have explored positions and frontier positions
+        HashSet<Vector3Int> exploredPositions = new HashSet<Vector3Int>(); //fully exploerd positions
+        HashSet<Vector3Int> frontierPositions = new HashSet<Vector3Int>(); //positions on the frontier that we can still move from
+        frontierPositions.Add(gridPosition);
+        HashSet<Vector3Int> newFrontierPositions = new HashSet<Vector3Int>(); //positions that will be added to the frontier at the end of the cycle
+        int stage;
+        for (stage = 1; stage <= maxRange; stage++)
+        {
+            if (frontierPositions.Count == 0) break;
+            //iterate through each node in frontier positions, getting the adjacent points to it and adding it to the list
+            foreach (Vector3Int frontierPoint in frontierPositions)
+            {
+                foreach (Vector3Int point in GetAllGridPointsInRange(frontierPoint, 1))
+                {
+                    //if the point isn't in explored positions or frontier positions
+                    if (!(exploredPositions.Contains(point) || frontierPositions.Contains(point)))
+                    {
+                        TileScript hex = GetHexAtGridPoint(point);
+                        UnitScript unit = GetUnitAtGridPoint(point);
+                        if (hex != null)
+                        {
+                            //always add to frontier positions
+                            newFrontierPositions.Add(point);
+                            //return the result if we find an appropriate tile
+                            if (hex.team != startTile.team && (countNeutrals || hex.team != 0))
+                                return stage;
+                        }
+                    }
+                }
+            }
+            //move the frontier into explored and the new frontier into the frontier
+            exploredPositions.UnionWith(frontierPositions);
+            frontierPositions = new HashSet<Vector3Int>(newFrontierPositions);
+            newFrontierPositions.Clear();
+        }
+        return stage;
+    }
 }
