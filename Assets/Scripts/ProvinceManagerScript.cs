@@ -126,13 +126,19 @@ public class ProvinceManagerScript : MonoBehaviour
             winningProvince = this;
             losingProvince = otherProvince;
         }
-        foreach (var tile in losingProvince.controlledTiles)
-            tile.owner = winningProvince;
+        if (winningProvince.team != losingProvince.team)
+        {
+            Debug.LogError("Coup attempted! " + winningProvince.transform.position);
+        }
+        var switchingTiles = new HashSet<TileScript>(losingProvince.controlledTiles);
+        foreach (var tile in switchingTiles)
+            tile.ChangeTeam(winningProvince.team, winningProvince);
         foreach (var unit in losingProvince.controlledUnits)
             unit.owner = winningProvince;
         winningProvince.money += losingProvince.money;
         GameManager.Main.activeProvinces.Remove(losingProvince);
-        Destroy(losingProvince.gameObject);
+        if (losingProvince == null) print("Losing Province is Null!");
+        else Destroy(losingProvince.gameObject);
     }
     //the province has been split, create a new province
     public void SplitProvince(IEnumerable<Vector3Int> newTerritory)
@@ -155,7 +161,12 @@ public class ProvinceManagerScript : MonoBehaviour
         foreach (Vector3Int position in newTerritoryList)
         {
             TileScript tile = GridManager.GetHexAtGridPoint(position);
-            if (tile == null || tile.owner != this) print("Invalid tile in split!");
+            if (tile == null || tile.owner != this)
+            {
+                Debug.LogError("Invalid tile in split! " + tile.transform.position);
+                print("Current Owner: " + tile.owner.transform.position);
+                print("Expected Owner: " + transform.position);
+            }
             tile.ChangeTeam(newCapital.team, newCapital);
             UnitScript unit = GridManager.GetUnitAtGridPoint(position);
             if (unit != null) unit.SetOwner();

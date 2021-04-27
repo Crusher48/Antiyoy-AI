@@ -5,9 +5,11 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
+    public static Dictionary<Vector3Int, TileScript> tilePool;
     public static Grid grid;
     private void Awake()
     {
+        tilePool = new Dictionary<Vector3Int, TileScript>();
         grid = GetComponent<Grid>();
     }
     //snaps the target to the center of a grid coordinate and returns it
@@ -99,14 +101,26 @@ public class GridManager : MonoBehaviour
         //print(point);
         //print(GetWorldPosition(point));
         //print((Vector2)(GetWorldPosition(point)));
-        Collider2D[] hits = Physics2D.OverlapPointAll((Vector2)(GetWorldPosition(point)), Physics2D.AllLayers);
-        foreach (Collider2D hit in hits)
+        if (tilePool.ContainsKey(point)) //if it's already in the pool, just return it
         {
-            TileScript tileScript = hit.gameObject.GetComponent<TileScript>();
-            if (tileScript != null)
-                return tileScript;
+            return tilePool[point];
         }
-        return null;
+        else //look for the tile at the location
+        {
+            Collider2D[] hits = Physics2D.OverlapPointAll((Vector2)(GetWorldPosition(point)), Physics2D.AllLayers);
+            foreach (Collider2D hit in hits)
+            {
+                TileScript tileScript = hit.gameObject.GetComponent<TileScript>();
+                if (tileScript != null)
+                {
+                    tilePool.Add(point, tileScript);
+                    return tileScript;
+                }
+            }
+            //if there's no collision here
+            tilePool.Add(point, null);
+            return null;
+        }
     }
     //gets the unit on a grid point
     public static UnitScript GetUnitAtGridPoint(Vector3Int point)

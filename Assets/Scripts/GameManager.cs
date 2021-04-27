@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Main;
     public int activeTeam = 0;
-    public List<ProvinceManagerScript> activeProvinces;
+    public HashSet<ProvinceManagerScript> activeProvinces;
     public int MAX_TEAMS = 2;
     public int MAX_ROUNDS = 50;
     public GameObject capital;
@@ -37,7 +37,8 @@ public class GameManager : MonoBehaviour
             if (AITurnDelayTimer < 0)
             {
                 print(activeTeam);
-                foreach (ProvinceManagerScript province in activeProvinces) //run the AI for each province, then end the turn
+                HashSet<ProvinceManagerScript> activeProvincesCopy = new HashSet<ProvinceManagerScript>(activeProvinces);
+                foreach (ProvinceManagerScript province in activeProvincesCopy) //run the AI for each province, then end the turn
                 {
                     GetComponent<AIManager>().RunAITurn(province);
                 }
@@ -52,7 +53,7 @@ public class GameManager : MonoBehaviour
         int nextTeam = activeTeam;
         //look for active provinces
         List<ProvinceManagerScript> allProvinces = new List<ProvinceManagerScript>(GameObject.FindObjectsOfType<ProvinceManagerScript>());
-        activeProvinces = new List<ProvinceManagerScript>();
+        activeProvinces = new HashSet<ProvinceManagerScript>();
         int breaker = 0;
         do
         {

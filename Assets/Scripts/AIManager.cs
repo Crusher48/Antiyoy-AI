@@ -76,15 +76,14 @@ public class AIManager : MonoBehaviour
         List<UnitScript> moveableUnits = new List<UnitScript>(province.controlledUnits);
         foreach (UnitScript unit in moveableUnits)
         {
-            if (!unit.mobile) continue; //skip over units that can't move
+            if (unit == null || !unit.mobile) continue; //skip over units that can't move
             float bestWeight = -9999;
             Vector3Int bestPosition = Vector3Int.zero;
             foreach (Vector3Int position in unit.GetAllValidMovePositions())
             {
-                if (!tileWeightList.ContainsKey(position))
+                if (!tileWeightList.ContainsKey(position)) //we likely merged, ignore the tiles we just merged into
                 {
-                    print("Could Not Find Position Key!");
-                    continue;
+                    tileWeightList.Add(position, GetTileWeightOutputs(currentAI, unitMode, position, province.team));
                 }
                 if (tileWeightList[position][unit.powerLevel] > bestWeight)
                 {
@@ -111,10 +110,9 @@ public class AIManager : MonoBehaviour
             Vector3Int bestPosition = Vector3Int.zero;
             foreach (Vector3Int position in allConnectedPositions)
             {
-                if (!tileWeightList.ContainsKey(position))
+                if (!tileWeightList.ContainsKey(position)) //we likely merged, ignore the tiles we just merged into
                 {
-                    print("Could Not Find Position Key!");
-                    continue;
+                    tileWeightList.Add(position, GetTileWeightOutputs(currentAI, unitMode, position, province.team));
                 }
                 if (tileWeightList[position][1] > bestWeight)
                 {

@@ -83,7 +83,7 @@ public class UnitScript : MonoBehaviour
                     if (adjacentTile == null) continue;
                     if (adjacentTile.team == currentTeam)
                     {
-                        if (adjacentTile.owner != targetTile.owner)
+                        if (adjacentTile.owner != owner) //if the other tile is not our tile
                         {
                             print("Merging Province!");
                             owner.MergeProvince(adjacentTile.owner);
@@ -95,7 +95,6 @@ public class UnitScript : MonoBehaviour
                         var connectedPositions = GridManager.GetAllConnectedTiles(GridManager.GetGridPosition(adjacentTile.transform.position), 99, false);
                         if (adjacentTile.owner != null && !connectedPositions.Contains(GridManager.GetGridPosition(adjacentTile.owner.transform.position)))
                         {
-                            print("Splitting Province!");
                             adjacentTile.owner.SplitProvince(connectedPositions);
                         }
                     }
