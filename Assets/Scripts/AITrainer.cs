@@ -70,7 +70,7 @@ public class AITrainer : MonoBehaviour
         GameObject playerControlsObject = GameObject.Find("PlayerControls");
         if (viewable)
         {
-            GameManager.Main.AITurnDelay = 1f;
+            GameManager.Main.AITurnDelay = 0.1f;
         }
         else
         {

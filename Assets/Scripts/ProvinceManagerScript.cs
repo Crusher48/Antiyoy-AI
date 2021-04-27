@@ -33,10 +33,15 @@ public class ProvinceManagerScript : MonoBehaviour
             foreach (Vector3Int position in nearbyPositions)
             {
                 TileScript hex = GridManager.GetHexAtGridPoint(position);
+                UnitScript unit = GridManager.GetUnitAtGridPoint(position);
                 if (hex != null)
                 {
                     hex.ChangeTeam(team,this);
                     controlledTiles.Add(hex);
+                }
+                if (unit != null)
+                {
+                    unit.SetOwner();
                 }
             }
         }
@@ -48,6 +53,18 @@ public class ProvinceManagerScript : MonoBehaviour
         if (isDestroyed)
         {
             return;
+        }
+        foreach (var unit in controlledUnits)
+        {
+            if (unit != null && unit.GetTeam() != team)
+            {
+                Debug.LogWarning("Unit is an imposter!");
+                print(unit);
+                print(team);
+                print(unit.transform.position);
+                print(GridManager.GetUnitAtGridPoint(GridManager.GetGridPosition(unit.transform.position)));
+                Destroy(unit.gameObject);
+            }
         }
         GridManager.unitPool[GridManager.GetGridPosition(transform.position)] = GetComponent<UnitScript>();
         /*
@@ -91,19 +108,23 @@ public class ProvinceManagerScript : MonoBehaviour
             buildCost += 2 * GetTownCount();
         if (money < buildCost) return; //we need enough money to actually build the unit
         //create the unit
-        TileScript targetTIle = GridManager.GetHexAtGridPoint(position);
+        TileScript targetTile = GridManager.GetHexAtGridPoint(position);
         UnitScript targetUnit = GridManager.GetUnitAtGridPoint(position);
         //if tile is clear, just move there
-        if (targetTIle.owner == this && targetUnit == null)
+        if (targetTile.owner == this && targetUnit == null)
         {
             GameObject newUnit = Instantiate(unitPrefab, GridManager.GetWorldPosition(position), Quaternion.identity);
+            newUnit.GetComponent<UnitScript>().SetOwner();
             money -= buildCost;
         }
         else //initialize the unit on this province tile and then attempt to move it
         {
             GameObject newUnit = Instantiate(unitPrefab, this.transform.position, Quaternion.identity);
             if (newUnit.GetComponent<UnitScript>().MoveUnit(position))
+            {
+                newUnit.GetComponent<UnitScript>().SetOwner();
                 money -= buildCost;
+            }
             else
                 Destroy(newUnit);
             GridManager.unitPool[GridManager.GetGridPosition(transform.position)] = GetComponent<UnitScript>(); //because the unit moved off of this tile, it potentially cleared the unit pool value, re-add that
@@ -149,7 +170,7 @@ public class ProvinceManagerScript : MonoBehaviour
         }
         if (winningProvince.team != losingProvince.team)
         {
-            Debug.LogError("Coup attempted! " + winningProvince.transform.position);
+            Debug.LogError("Coup attempted! " + winningProvince.transform.position + losingProvince.transform.position);
         }
         var switchingTiles = new HashSet<TileScript>(losingProvince.controlledTiles);
         foreach (var tile in switchingTiles)

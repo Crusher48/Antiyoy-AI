@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
             AITurnDelayTimer -= Time.deltaTime;
             if (AITurnDelayTimer < 0)
             {
-                //print(activeTeam);
+                //print("Running Team " + activeTeam);
                 HashSet<ProvinceManagerScript> activeProvincesCopy = new HashSet<ProvinceManagerScript>(activeProvinces);
                 foreach (ProvinceManagerScript province in activeProvincesCopy) //run the AI for each province, then end the turn
                 {

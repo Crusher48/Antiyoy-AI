@@ -292,7 +292,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   activeTeam: 0
-  MAX_TEAMS: 2
+  MAX_TEAMS: 6
   MAX_ROUNDS: 100
   capital: {fileID: 8633602850769572578, guid: 183c5bbdd5280cd4bace146fde443ca0, type: 3}
   tier1Unit: {fileID: 3715594107091024925, guid: 4945ce9b9460752458bd9919b9004724,

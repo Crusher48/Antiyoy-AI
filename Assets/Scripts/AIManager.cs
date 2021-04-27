@@ -31,7 +31,8 @@ public class AIManager : MonoBehaviour
         strategicInputs.Add((float)province.GetUnitCount(3)); //input 5: tier 3 units
         strategicInputs.Add((float)province.GetUnitCount(4)); //input 6: tier 4 units
         strategicInputs.Add((float)province.GetTownCount()); //input 7: amount of towns in the province
-        strategicInputs.Add((float)GridManager.GetRangeToOtherTeam(GridManager.GetGridPosition(transform.position), 99)); //input 8: distance to closest enemy province
+        strategicInputs.Add((float)province.controlledTiles.Count); //input 8: total tile count in the province
+        strategicInputs.Add((float)GridManager.GetRangeToOtherTeam(GridManager.GetGridPosition(transform.position), 99)); //input 9: distance to closest enemy province
         //TODO: enemy unit counts?
         //get the strategic outputs
         List<float> strategicOutputs = currentAI.ProcessStrategicNetwork(strategicInputs,7);
@@ -55,20 +56,7 @@ public class AIManager : MonoBehaviour
         foreach (UnitScript unit in moveableUnits)
         {
             if (unit == null || !unit.mobile) continue; //skip over units that can't move
-            float bestWeight = -9999;
-            Vector3Int bestPosition = Vector3Int.zero;
-            foreach (Vector3Int position in unit.GetAllValidMovePositions())
-            {
-                if (!tileWeightList.ContainsKey(position)) //we likely merged, ignore the tiles we just merged into
-                {
-                    tileWeightList.Add(position, GetTileWeightOutputs(currentAI, unitMode, position, province.team));
-                }
-                if (tileWeightList[position][unit.powerLevel] > bestWeight)
-                {
-                    bestWeight = tileWeightList[position][1];
-                    bestPosition = position;
-                }
-            }
+            Vector3Int bestPosition = GetBestPosition(tileWeightList, unit.GetAllValidMovePositions(), unit.powerLevel);
             //move the unit
             unit.MoveUnit(bestPosition);
             //update adjacent weights
@@ -84,32 +72,30 @@ public class AIManager : MonoBehaviour
         //spawn units
         for (float x = 1; x <= constructPeasant; x += 1)
         {
-            float bestWeight = -9999;
-            Vector3Int bestPosition = Vector3Int.zero;
-            foreach (Vector3Int position in allConnectedPositions)
-            {
-                if (!tileWeightList.ContainsKey(position)) //we likely merged, ignore the tiles we just merged into
-                {
-                    tileWeightList.Add(position, GetTileWeightOutputs(currentAI, unitMode, position, province.team));
-                }
-                if (tileWeightList[position][1] > bestWeight)
-                {
-                    bestWeight = tileWeightList[position][1];
-                    bestPosition = position;
-                }
-            }
-            province.SpawnUnit(GameManager.Main.tier1Unit,bestPosition);
-            //update adjacent weights
-            foreach (var position in GridManager.GetAllGridPointsInRange(bestPosition, 1))
-            {
-                if (GridManager.GetHexAtGridPoint(position) == null) continue; //skip if it's a hole
-                if (tileWeightList.ContainsKey(position))
-                    tileWeightList[position] = GetTileWeightOutputs(currentAI, unitMode, position, province.team);
-                else
-                    tileWeightList.Add(position, GetTileWeightOutputs(currentAI, unitMode, position, province.team));
-            }
+            SpawnNewUnit(province, tileWeightList, allConnectedPositions, 1, currentAI, unitMode);
+        }
+        for (float x = 1; x <= constructSpearman; x += 1)
+        {
+            SpawnNewUnit(province, tileWeightList, allConnectedPositions, 2, currentAI, unitMode);
+        }
+        for (float x = 1; x <= constructBaron; x += 1)
+        {
+            SpawnNewUnit(province, tileWeightList, allConnectedPositions, 3, currentAI, unitMode);
+        }
+        for (float x = 1; x <= constructKnight; x += 1)
+        {
+            SpawnNewUnit(province, tileWeightList, allConnectedPositions, 4, currentAI, unitMode);
+        }
+        for (float x = 1; x <= constructTower; x += 1)
+        {
+            SpawnNewUnit(province, tileWeightList, allConnectedPositions, 5, currentAI, unitMode);
+        }
+        for (float x = 1; x <= constructTown; x += 1)
+        {
+            SpawnNewUnit(province, tileWeightList, allConnectedPositions, 6, currentAI, unitMode);
         }
     }
+    //gets the tile weights for a tile
     List<float> GetTileWeightOutputs(AIInterface currentAI, float unitMode, Vector3Int position, int team)
     {
         TileScript tile = GridManager.GetHexAtGridPoint(position);
@@ -136,5 +122,62 @@ public class AIManager : MonoBehaviour
         float townWeight = weightOutputs[6]; //output 6, build weight for towns
         //add to the tile weight list
         return weightOutputs;
+    }
+    //gets the best tile weight for the given unit type out of the given movement zones
+    Vector3Int GetBestPosition(Dictionary<Vector3Int, List<float>> tileWeightList, HashSet<Vector3Int> positions, int unitType)
+    {
+        float bestWeight = -9999;
+        Vector3Int bestPosition = Vector3Int.zero;
+        foreach (Vector3Int position in positions)
+        {
+            if (!tileWeightList.ContainsKey(position)) //we likely merged, ignore the tiles we just merged into
+            {
+                continue;
+                //tileWeightList.Add(position, GetTileWeightOutputs(currentAI, unitMode, position, province.team));
+            }
+            if (tileWeightList[position][unitType] > bestWeight)
+            {
+                bestWeight = tileWeightList[position][unitType];
+                bestPosition = position;
+            }
+        }
+        return bestPosition;
+    }
+    //spawns a new unit or building
+    void SpawnNewUnit(ProvinceManagerScript province, Dictionary<Vector3Int, List<float>> tileWeightList, HashSet<Vector3Int> positions, int unitType, AIInterface currentAI, float unitMode)
+    {
+        Vector3Int bestPosition = GetBestPosition(tileWeightList, positions, unitType);
+        GameObject spawnedUnit = null;
+        switch(unitType)
+        {
+            case 1:
+                spawnedUnit = GameManager.Main.tier1Unit;
+                break;
+            case 2:
+                spawnedUnit = GameManager.Main.tier2Unit;
+                break;
+            case 3:
+                spawnedUnit = GameManager.Main.tier3Unit;
+                break;
+            case 4:
+                spawnedUnit = GameManager.Main.tier4Unit;
+                break;
+            case 5:
+                spawnedUnit = GameManager.Main.tower;
+                break;
+            case 6:
+                spawnedUnit = GameManager.Main.town;
+                break;
+        }
+        province.SpawnUnit(spawnedUnit, bestPosition);
+        //update adjacent weights
+        foreach (var position in GridManager.GetAllGridPointsInRange(bestPosition, 1))
+        {
+            if (GridManager.GetHexAtGridPoint(position) == null) continue; //skip if it's a hole
+            if (tileWeightList.ContainsKey(position))
+                tileWeightList[position] = GetTileWeightOutputs(currentAI, unitMode, position, province.team);
+            else
+                tileWeightList.Add(position, GetTileWeightOutputs(currentAI, unitMode, position, province.team));
+        }
     }
 }
