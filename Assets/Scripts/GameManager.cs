@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
             AITurnDelayTimer -= Time.deltaTime;
             if (AITurnDelayTimer < 0)
             {
-                print(activeTeam);
+                //print(activeTeam);
                 HashSet<ProvinceManagerScript> activeProvincesCopy = new HashSet<ProvinceManagerScript>(activeProvinces);
                 foreach (ProvinceManagerScript province in activeProvincesCopy) //run the AI for each province, then end the turn
                 {
@@ -73,7 +73,7 @@ public class GameManager : MonoBehaviour
         AITurnDelayTimer = AITurnDelay;
         if (currentRound > MAX_ROUNDS)
         {
-            print("Turn Limit Reached, ending game!");
+            //print("Turn Limit Reached, ending game!");
             EndGame();
         }
         //upkeep and initialize province turn

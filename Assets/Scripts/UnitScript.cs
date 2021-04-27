@@ -14,12 +14,22 @@ public class UnitScript : MonoBehaviour
     //public int team = 0; //units always have the same team as the tile directly underneath them
     private void Awake()
     {
+        Vector3Int gridPosition = GridManager.GetGridPosition(transform.position);
+        if (!GridManager.unitPool.ContainsKey(gridPosition))
+            GridManager.unitPool.Add(gridPosition, this);
+        else
+            GridManager.unitPool[gridPosition] = this;
         SetOwner();
     }
-    private void OnDestroy()
+    public void DestroyUnit()
     {
+        //if (GridManager.grid == null) return; //prevent errors on scene change
         if (owner != null)
             owner.controlledUnits.Remove(this);
+        if (GetComponent<ProvinceManagerScript>() != null)
+            GetComponent<ProvinceManagerScript>().SackProvince();
+        GridManager.unitPool[GridManager.GetGridPosition(transform.position)] = null;
+        Destroy(this.gameObject);
     }
     public int GetTeam()
     {
@@ -38,6 +48,7 @@ public class UnitScript : MonoBehaviour
     //attempts to move the unit, returns false if the unit failed to move
     public bool MoveUnit(Vector3Int targetPosition)
     {
+        Vector3Int oldPosition = GridManager.GetGridPosition(transform.position);
         if (!(mobile && canMove)) return false; //we can't move if we can't move
         if (targetPosition == GridManager.GetGridPosition(transform.position)) return false; //no, you cannot move into yourself to upgrade
         int currentTeam = GetTeam();
@@ -54,13 +65,17 @@ public class UnitScript : MonoBehaviour
                     //merge move handling
                     GameObject mergedUnit = GameManager.Main.GetUnit(this.powerLevel + targetUnit.powerLevel);
                     if (mergedUnit == null) return false; //the resulting unit would be too powerful
-                    Instantiate(mergedUnit, targetUnit.transform.position, Quaternion.identity);
-                    mergedUnit.GetComponent<UnitScript>().canMove = targetUnit.canMove; //merged unit can move if the unit being merged into could move
-                    Destroy(gameObject);
-                    Destroy(targetUnit.gameObject);
+                    bool targetCanMove = targetUnit.canMove;
+                    //destroy the old units first
+                    DestroyUnit();
+                    targetUnit.DestroyUnit();
+                    //create the new merged unit
+                    Instantiate(mergedUnit, targetPosition, Quaternion.identity);
+                    mergedUnit.GetComponent<UnitScript>().canMove = targetCanMove; //merged unit can move if the unit being merged into could move
                 }
                 else
                 {
+                    GridManager.unitPool[oldPosition] = null;
                     transform.position = GridManager.GetWorldPosition(targetPosition);
                 }
             }
@@ -74,6 +89,7 @@ public class UnitScript : MonoBehaviour
                     //move fails if a defender exists, is on the same team as the target tile, and it has power level equal to or greater than our own
                     if (possibleDefender != null && possibleDefender.GetTeam() == targetTile.team && powerLevel <= possibleDefender.powerLevel) return false;
                 }
+                GridManager.unitPool[oldPosition] = null;
                 transform.position = GridManager.GetWorldPosition(targetPosition);
                 targetTile.ChangeTeam(currentTeam, owner);
                 //split and merge functionality
@@ -85,7 +101,6 @@ public class UnitScript : MonoBehaviour
                     {
                         if (adjacentTile.owner != owner) //if the other tile is not our tile
                         {
-                            print("Merging Province!");
                             owner.MergeProvince(adjacentTile.owner);
                             SetOwner(); //just in case
                         }
@@ -99,9 +114,13 @@ public class UnitScript : MonoBehaviour
                         }
                     }
                 }
-                if (targetUnit != null) Destroy(targetUnit.gameObject); //destroy the unit we attacked
+                if (targetUnit != null) targetUnit.DestroyUnit(); //destroy the unit we attacked
             }
         }
+        if (!GridManager.unitPool.ContainsKey(targetPosition))
+            GridManager.unitPool.Add(GridManager.GetGridPosition(transform.position), this);
+        else
+            GridManager.unitPool[targetPosition] = this;
         canMove = false; //we've moved, now we can't move anymore
         return true;
     }

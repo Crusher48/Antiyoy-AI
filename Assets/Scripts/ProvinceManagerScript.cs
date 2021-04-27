@@ -8,6 +8,7 @@ public class ProvinceManagerScript : MonoBehaviour
     public HashSet<TileScript> controlledTiles;
     public HashSet<UnitScript> controlledUnits;
     public int money = 0;
+    bool isDestroyed = false;
     //called to initialize the province
     private void Awake()
     {
@@ -44,6 +45,23 @@ public class ProvinceManagerScript : MonoBehaviour
     //province turn-start update
     public void StartProvinceTurn()
     {
+        if (isDestroyed)
+        {
+            return;
+        }
+        GridManager.unitPool[GridManager.GetGridPosition(transform.position)] = GetComponent<UnitScript>();
+        /*
+        if (GridManager.GetHexAtGridPoint(GridManager.GetGridPosition(transform.position)).team != team)
+        {
+            Debug.LogError("Province Bug! " + transform.position);
+            print(GridManager.GetUnitAtGridPoint(GridManager.GetGridPosition(transform.position)));
+        }
+        if (GridManager.GetUnitAtGridPoint(GridManager.GetGridPosition(transform.position)) != GetComponent<UnitScript>())
+        {
+            Debug.LogError("Invalid province unit assignment!" + transform.position);
+            print(GridManager.GetUnitAtGridPoint(GridManager.GetGridPosition(transform.position)));
+        }
+        */
         //handle money
         money += GetIncome();
         if (money <= 0)
@@ -55,10 +73,11 @@ public class ProvinceManagerScript : MonoBehaviour
     //the province goes bankrupt and all the units quit
     public void BankruptProvince()
     {
-        foreach (UnitScript unit in controlledUnits)
+        var deletedUnits = new HashSet<UnitScript>(controlledUnits);
+        foreach (UnitScript unit in deletedUnits)
         {
-            if (unit.GetComponent<ProvinceManagerScript>() == null)
-                Destroy(unit.gameObject);
+            if (unit != null && unit.mobile)
+                unit.DestroyUnit();
         }
         controlledUnits.Clear();
         money = 0;
@@ -87,6 +106,7 @@ public class ProvinceManagerScript : MonoBehaviour
                 money -= buildCost;
             else
                 Destroy(newUnit);
+            GridManager.unitPool[GridManager.GetGridPosition(transform.position)] = GetComponent<UnitScript>(); //because the unit moved off of this tile, it potentially cleared the unit pool value, re-add that
         }
     }
     //gets the amount of mobile units of the given tier (or all if tier is left at 0
@@ -114,6 +134,7 @@ public class ProvinceManagerScript : MonoBehaviour
     //merges with another friendly province
     public void MergeProvince(ProvinceManagerScript otherProvince)
     {
+        //print("Merging province!");
         ProvinceManagerScript winningProvince, losingProvince;
         if (otherProvince.controlledTiles.Count > this.controlledTiles.Count) //the larger province wins the merger
         {
@@ -138,11 +159,12 @@ public class ProvinceManagerScript : MonoBehaviour
         winningProvince.money += losingProvince.money;
         GameManager.Main.activeProvinces.Remove(losingProvince);
         if (losingProvince == null) print("Losing Province is Null!");
-        else Destroy(losingProvince.gameObject);
+        else losingProvince.GetComponent<UnitScript>().DestroyUnit();
     }
     //the province has been split, create a new province
     public void SplitProvince(IEnumerable<Vector3Int> newTerritory)
     {
+        //print("Splitting province!");
         List<Vector3Int> newTerritoryList = new List<Vector3Int>(newTerritory);
         //pick a random location to place the capital
         Vector3Int chosenPosition; int counter = 50;
@@ -155,7 +177,7 @@ public class ProvinceManagerScript : MonoBehaviour
                 counter--;
         }
         while (counter < 0);
-        if (GridManager.GetUnitAtGridPoint(chosenPosition) != null) Destroy(GridManager.GetUnitAtGridPoint(chosenPosition).gameObject); //if forced to override a unit, destroy it
+        if (GridManager.GetUnitAtGridPoint(chosenPosition) != null) GridManager.GetUnitAtGridPoint(chosenPosition).DestroyUnit(); //if forced to override a unit, destroy it
         ProvinceManagerScript newCapital = Instantiate(GameManager.Main.capital, GridManager.GetWorldPosition(chosenPosition), Quaternion.identity).GetComponent<ProvinceManagerScript>();
         newCapital.team = team;
         foreach (Vector3Int position in newTerritoryList)
@@ -171,5 +193,9 @@ public class ProvinceManagerScript : MonoBehaviour
             UnitScript unit = GridManager.GetUnitAtGridPoint(position);
             if (unit != null) unit.SetOwner();
         }
+    }
+    public void SackProvince()
+    {
+        isDestroyed = true;
     }
 }

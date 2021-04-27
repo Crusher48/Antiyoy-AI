@@ -15,8 +15,13 @@ public class TileScript : MonoBehaviour
         new Color(0.8f,0.25f,0.8f),
         new Color(1f,0.5f,0.1f)};
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
+        Vector3Int gridPosition = GridManager.GetGridPosition(transform.position);
+        if (!GridManager.tilePool.ContainsKey(gridPosition))
+        {
+            GridManager.tilePool.Add(GridManager.GetGridPosition(transform.position), this);
+        }
         transform.parent = GameObject.Find("Grid").transform;
     }
 

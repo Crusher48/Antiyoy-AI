@@ -6,10 +6,12 @@ using UnityEngine;
 public class GridManager : MonoBehaviour
 {
     public static Dictionary<Vector3Int, TileScript> tilePool;
+    public static Dictionary<Vector3Int, UnitScript> unitPool;
     public static Grid grid;
     private void Awake()
     {
         tilePool = new Dictionary<Vector3Int, TileScript>();
+        unitPool = new Dictionary<Vector3Int, UnitScript>();
         grid = GetComponent<Grid>();
     }
     //snaps the target to the center of a grid coordinate and returns it
@@ -107,6 +109,7 @@ public class GridManager : MonoBehaviour
         }
         else //look for the tile at the location
         {
+            /*
             Collider2D[] hits = Physics2D.OverlapPointAll((Vector2)(GetWorldPosition(point)), Physics2D.AllLayers);
             foreach (Collider2D hit in hits)
             {
@@ -117,6 +120,7 @@ public class GridManager : MonoBehaviour
                     return tileScript;
                 }
             }
+            */
             //if there's no collision here
             tilePool.Add(point, null);
             return null;
@@ -125,10 +129,8 @@ public class GridManager : MonoBehaviour
     //gets the unit on a grid point
     public static UnitScript GetUnitAtGridPoint(Vector3Int point)
     {
-        //print(point);
-        //print(GetWorldPosition(point));
-        //print((Vector2)(GetWorldPosition(point)));
-        Collider2D[] hits = Physics2D.OverlapPointAll((Vector2)(GetWorldPosition(point)),Physics2D.AllLayers);
+        /*
+        Collider2D[] hits = Physics2D.OverlapPointAll((Vector2)(GetWorldPosition(point)), Physics2D.AllLayers);
         foreach (Collider2D hit in hits)
         {
             UnitScript unitScript = hit.gameObject.GetComponent<UnitScript>();
@@ -136,6 +138,25 @@ public class GridManager : MonoBehaviour
                 return unitScript;
         }
         return null;
+        */
+        if (unitPool.ContainsKey(point)) //if it's already in the pool, just return it
+        {
+            return unitPool[point];
+        }
+        else //look for the unit at the location
+        {
+            Collider2D[] hits = Physics2D.OverlapPointAll((Vector2)(GetWorldPosition(point)), Physics2D.AllLayers);
+            foreach (Collider2D hit in hits)
+            {
+                UnitScript unitScript = hit.gameObject.GetComponent<UnitScript>();
+                if (unitScript != null)
+                    return unitScript;
+            }
+            //if there's no collision here
+            if (!unitPool.ContainsKey(point))
+                unitPool.Add(point, null);
+            return null;
+        }
     }
     //gets all hexes of the same team connected to the hex
     public static HashSet<Vector3Int> GetAllConnectedTiles(Vector3Int gridPosition, int maxRange, bool extendIntoOpposition = true)
