@@ -110,23 +110,19 @@ public class ProvinceManagerScript : MonoBehaviour
         //create the unit
         TileScript targetTile = GridManager.GetHexAtGridPoint(position);
         UnitScript targetUnit = GridManager.GetUnitAtGridPoint(position);
-        //if tile is clear, just move there
+        //if tile is clear, just spawn there
         if (targetTile.owner == this && targetUnit == null)
         {
             GameObject newUnit = Instantiate(unitPrefab, GridManager.GetWorldPosition(position), Quaternion.identity);
-            newUnit.GetComponent<UnitScript>().SetOwner();
             money -= buildCost;
         }
         else //initialize the unit on this province tile and then attempt to move it
         {
             GameObject newUnit = Instantiate(unitPrefab, this.transform.position, Quaternion.identity);
             if (newUnit.GetComponent<UnitScript>().MoveUnit(position))
-            {
-                newUnit.GetComponent<UnitScript>().SetOwner();
                 money -= buildCost;
-            }
             else
-                Destroy(newUnit);
+                newUnit.GetComponent<UnitScript>().DestroyUnit();
             GridManager.unitPool[GridManager.GetGridPosition(transform.position)] = GetComponent<UnitScript>(); //because the unit moved off of this tile, it potentially cleared the unit pool value, re-add that
         }
     }

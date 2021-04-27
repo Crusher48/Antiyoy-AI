@@ -24,7 +24,7 @@ public class HardcodedAI : AIInterface
             outputList[5] = 1*randomMultiplier;
             outputList[6] = 1*randomMultiplier;
         }
-        else
+        //else
         {
             outputList[1] = 1*randomMultiplier;
             outputList[2] = 1*randomMultiplier;

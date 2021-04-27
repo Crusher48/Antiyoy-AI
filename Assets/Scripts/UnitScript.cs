@@ -43,7 +43,7 @@ public class UnitScript : MonoBehaviour
         TileScript currentTile = GridManager.GetHexAtGridPoint(GridManager.GetGridPosition(transform.position));
         if (currentTile == null)
         {
-            Debug.LogError("SPawning in the void!");
+            Debug.LogError("Spawning in the void!");
             print(transform.position);
         }
         owner = currentTile.owner;
@@ -76,7 +76,7 @@ public class UnitScript : MonoBehaviour
                     targetUnit.DestroyUnit();
                     //create the new merged unit
                     GameObject newUnit = Instantiate(mergedUnit, GridManager.GetWorldPosition(targetPosition), Quaternion.identity);
-                    newUnit.GetComponent<UnitScript>().SetOwner();
+                    GridManager.unitPool[targetPosition] = newUnit.GetComponent<UnitScript>();
                     newUnit.GetComponent<UnitScript>().canMove = targetCanMove; //merged unit can move if the unit being merged into could move
                     return true;
                 }
@@ -85,7 +85,7 @@ public class UnitScript : MonoBehaviour
                     GridManager.unitPool[oldPosition] = null;
                     transform.position = GridManager.GetWorldPosition(targetPosition);
                     if (!GridManager.unitPool.ContainsKey(targetPosition))
-                        GridManager.unitPool.Add(GridManager.GetGridPosition(transform.position), this);
+                        GridManager.unitPool.Add(targetPosition, this);
                     else
                         GridManager.unitPool[targetPosition] = this;
                 }
@@ -109,7 +109,7 @@ public class UnitScript : MonoBehaviour
                 targetTile.ChangeTeam(currentTeam, owner);
                 transform.position = GridManager.GetWorldPosition(targetPosition);
                 if (!GridManager.unitPool.ContainsKey(targetPosition))
-                    GridManager.unitPool.Add(GridManager.GetGridPosition(transform.position), this);
+                    GridManager.unitPool.Add(targetPosition, this);
                 else
                     GridManager.unitPool[targetPosition] = this;
                 //split and merge functionality
@@ -122,7 +122,6 @@ public class UnitScript : MonoBehaviour
                         if (adjacentTile.owner != owner) //if the other tile is not our tile
                         {
                             owner.MergeProvince(adjacentTile.owner);
-                            SetOwner(); //just in case
                         }
                     }
                     else
@@ -143,47 +142,5 @@ public class UnitScript : MonoBehaviour
     {
         if (!mobile) return new HashSet<Vector3Int>();
         return GridManager.GetAllConnectedTiles(GridManager.GetGridPosition(transform.position), 4);
-        /*
-        //A*-like, we have explored positions and frontier positions
-        HashSet<Vector3Int> exploredPositions = new HashSet<Vector3Int>(); //fully exploerd positions
-        HashSet<Vector3Int> frontierPositions = new HashSet<Vector3Int>(); //positions on the frontier that we can still move from
-        frontierPositions.Add(GridManager.GetGridPosition(transform.position));
-        HashSet<Vector3Int> newFrontierPositions = new HashSet<Vector3Int>(); //positions that will be added to the frontier at the end of the cycle
-        for (int stage = 1; stage <= MOVE_RANGE; stage++)
-        {
-            //iterate through each node in frontier positions, getting the adjacent points to it and adding it to the list
-            foreach (Vector3Int frontierPoint in frontierPositions)
-            {
-                foreach (Vector3Int point in GridManager.GetAllGridPointsInRange(frontierPoint, 1))
-                {
-                    //if the point isn't in explored positions or frontier positions
-                    if (!(exploredPositions.Contains(point) || frontierPositions.Contains(point)))
-                    {
-                        TileScript hex = GridManager.GetHexAtGridPoint(point);
-                        UnitScript unit = GridManager.GetUnitAtGridPoint(point);
-                        if (hex != null)
-                        {
-                            if (hex.team == GetTeam()) //if friendly, add to the next frontier
-                            {
-                                //if (unit == null || unit.mobile) //make sure we wouldn't move on top of a unit
-                                newFrontierPositions.Add(point);
-                            }
-                            else //hostile hex, add to the explored nodes
-                            {
-                                exploredPositions.Add(point);
-                            }
-                        }
-                    }
-                }
-            }
-            //move the frontier into explored and the new frontier into the frontier
-            exploredPositions.UnionWith(frontierPositions);
-            frontierPositions = new HashSet<Vector3Int>(newFrontierPositions);
-            newFrontierPositions.Clear();
-        }
-        //move remaining frontier nodes into explored
-        exploredPositions.UnionWith(frontierPositions);
-        return exploredPositions;
-        */
     }
 }
